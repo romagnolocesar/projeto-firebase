@@ -5,10 +5,10 @@ class App extends Component{
     constructor(props){
         super(props);
         this.state = {
-            token: 'Carregando...',
-            nome: '',
-            idade: ''
+            lista: []
         };
+
+        //Firebase Configurações
         let firebaseConfig = {
             apiKey: "AIzaSyCSmKMjLF8ziuj3sGXap36tsXHoOQeIPgM",
             authDomain: "reactapp-c2919.firebaseapp.com",
@@ -16,36 +16,43 @@ class App extends Component{
             storageBucket: "reactapp-c2919.appspot.com",
             messagingSenderId: "939382731975",
             appId: "1:939382731975:web:0b83e4c620cc60b5d4fae2"
-          };
-        // Initialize Firebase
+        };
+        // Inicializando Firebase
         if (!firebase.apps.length) {
-        firebase.initializeApp(firebaseConfig);
+            firebase.initializeApp(firebaseConfig);
         }
 
-    
-
-        /* Não fica olhando em tempo real, chama apenas uma vez (ONCE) */
-        firebase.database().ref('token').once('value').then((snapshot) => {
+        firebase.database().ref('usuarios').on('value', (snapshot) =>{
             let state = this.state;
-            state.token = snapshot.val();
-            this.setState(state);    
-        });
+            state.lista = [];
 
-        /* Olheiro -> Fica olhando o banco de dados em tempo real (ON) */
-        firebase.database().ref('Usuários').child('1').on('value', (snapshot) =>{
-            let state = this.state;
-            state.nome = snapshot.val().nome;
-            state.idade = snapshot.val().idade;
+            snapshot.forEach( (childItem) => {
+                state.lista.push({
+                    key: childItem.key,
+                    nome: childItem.val().nome,
+                    idade: childItem.val().idade    
+                });
+            });
+
             this.setState(state);
         });
+
+
     }
+
     render(){
-        const { token, nome, idade } = this.state; 
         return(
             <div>
-                <h1>Token: { token }</h1>
-                <h1>Nome: { nome }</h1>
-                <h1>Idade: { idade }</h1>
+                { this.state.lista.map( (item) => {
+                    return(
+                        <div>
+                            <h3>ID: { item.key }</h3>
+                            <h1>Olá { item.nome }</h1>
+                            <h2>Idade: { item.idade } anos</h2>
+                            <hr/>
+                        </div>
+                    );  
+                })}
             </div>
         );
     }
