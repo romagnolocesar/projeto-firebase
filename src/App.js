@@ -9,23 +9,32 @@ class App extends Component{
             senha: ''
         };
 
-        this.cadastrar = this.cadastrar.bind(this);
+        this.logar = this.logar.bind(this);
+        this.sair = this.sair.bind(this);
+
+        // firebase.auth().signOut();
+
+        //Verifica se o usuário está logado
+        firebase.auth().onAuthStateChanged( (user) => {
+            if(user){
+                alert('Usuário Logado com sucesso!\nEmail: ' + user.email);
+            }
+        });
     }
 
-    cadastrar(e){
+    logar(e){
         let {email, senha} = this.state;
-        firebase.auth().createUserWithEmailAndPassword(email, senha)
+
+        firebase.auth().signInWithEmailAndPassword(email, senha)
         .then( (success) => {
-            alert('Usuário cadastrado com sucesso');
-            this.setState({email: '', senha: ''});
+            alert('Seja Bem vindo');
+            // this.setState({email: '', senha: ''});
         })
         .catch( (error) => {
-            if(error.code === 'auth/invalid-email'){
-                alert('Email invalido!');
-            }else if(error.code === 'auth/email-already-in-use'){
-                alert('Email já está sendo utilizado!');
-            }else if(error.code === 'auth/weak-password'){
-                alert('Senha muito fraca!');
+            if(error.code === 'auth/wrong-password'){
+                alert('Senha incorreta.');
+            }else if(error.code === 'auth/user-not-found' || error.code === 'auth/user-not-found'){
+                alert('Usuário não encontrado.')
             }else{
                alert('Codigo de Erro: ' + error.code); 
             }
@@ -33,10 +42,22 @@ class App extends Component{
         e.preventDefault();
     }
 
+    sair(){
+        firebase.auth().signOut()
+        .then( (user) => {
+            alert("Usuário deslogado com sucesso!");
+        })
+        .catch( (error) => {
+            alert('Código do Erro: ' + error.code);
+        });
+
+    }
+
     render(){
         return(
             <div>
-                <form onSubmit={this.cadastrar}>
+                <h1>Entrar</h1>
+                <form onSubmit={ this.logar }>
 
                     <label>Email:</label><br/>
                     <input type="text" value={this.state.email} 
@@ -46,10 +67,10 @@ class App extends Component{
                     <input type="text" value={this.state.senha}
                         onChange={ (e) => this.setState({senha: e.target.value})}/><br/>
 
-                    <button type="submit">Cadastrar</button>
+                    <button type="submit">Entrar</button>
                 </form>
-                {this.state.email}
-                {this.state.senha}
+                <br/>
+                <button onClick={ this.sair }>Sair</button>
             </div>
         );
     }
